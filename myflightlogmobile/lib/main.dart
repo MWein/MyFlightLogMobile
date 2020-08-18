@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import './flightLog.dart';
 
 void main() => runApp(MyApp());
 
@@ -10,15 +11,19 @@ class MyApp extends StatelessWidget {
       theme: ThemeData(
         primarySwatch: Colors.blue,
       ),
-      home: MyHomePage(title: 'MyFlightLogMobile'),
+      //home: MyHomePage(title: 'MyFlightLogMobile'),
+
+      initialRoute: '/',
+      routes: {
+        '/': (context) => MyHomePage(),
+        '/flight': (context) => FlightLogPage(),
+      }
     );
   }
 }
 
 class MyHomePage extends StatefulWidget {
-  MyHomePage({Key key, this.title}) : super(key: key);
-
-  final String title;
+  MyHomePage() : super();
 
   @override
   _MyHomePageState createState() => _MyHomePageState();
@@ -29,7 +34,7 @@ class _MyHomePageState extends State<MyHomePage> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: Text(widget.title),
+        title: Text('Flight Log Mobile'),
       ),
       body: Center(
         child: Column(
@@ -39,20 +44,20 @@ class _MyHomePageState extends State<MyHomePage> {
 
             IconButton(
               icon: Icon(Icons.history),
-              color: Colors.red,
+              color: Colors.lightBlue,
               iconSize: 150.0,
+              onPressed: () {
+                Navigator.pushNamed(context, '/flight');
+              }
             ),
-            Text('Flight Logs'),
 
             Spacer(),
 
             IconButton(
               icon: Icon(Icons.build),
-              color: Colors.red,
+              color: Colors.lightBlue,
               iconSize: 150.0,
             ),
-
-            Text('Build Logs'),
 
             Spacer(),
           ],
