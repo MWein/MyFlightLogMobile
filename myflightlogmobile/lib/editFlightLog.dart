@@ -24,7 +24,7 @@ class EditFlightLogPage extends StatefulWidget {
 }
 
 class _EditFlightLogPageState extends State<EditFlightLogPage> {
-  final DateFormat _dateFormatter = DateFormat('dd MMM, yyyy');
+  final DateFormat _dateFormatter = DateFormat('dd MMMM, yyyy');
   Future<List<String>> aircraftIdents;
 
   // Stop editing
@@ -32,12 +32,16 @@ class _EditFlightLogPageState extends State<EditFlightLogPage> {
   bool _removeButtonEnabled = false;
   final stopTextController = TextEditingController();
 
+  // Remarks editing
+  StepState remarksStepState = StepState.editing;
+
   // New flight log data
   DateTime _date = DateTime.now();
   String _aircraft;
   List<String> _stops = [];
   int _takeoffs = 0;
   int _landings = 0;
+  final remarksTextController = TextEditingController();
 
 
   void addStop() async {
@@ -74,6 +78,7 @@ class _EditFlightLogPageState extends State<EditFlightLogPage> {
 
   goTo(int step) {
     setState(() => currentStep = step);
+    FocusScope.of(context).unfocus();
   }
 
   cancel() {
@@ -98,8 +103,7 @@ class _EditFlightLogPageState extends State<EditFlightLogPage> {
         title: const Text('Date'),
         isActive: currentStep == 0,
         state: StepState.complete,
-        content: Column(
-          mainAxisAlignment: MainAxisAlignment.start,
+        content: Row(
           children: [
             RaisedButton(
               child: Text(_dateFormatter.format(_date)),
@@ -184,6 +188,7 @@ class _EditFlightLogPageState extends State<EditFlightLogPage> {
                     textCapitalization: TextCapitalization.characters,
                     textAlign: TextAlign.center,
                     controller: stopTextController,
+                    autocorrect: false,
                     inputFormatters: [
                       UpperCaseTextFormatter(),
                     ],
@@ -278,16 +283,136 @@ class _EditFlightLogPageState extends State<EditFlightLogPage> {
         isActive: currentStep == 4,
         state: StepState.editing,
         content: Column(
-          children: [],
+          children: [
+
+
+            Row(
+              children: [
+                Container(
+                  width: 75,
+                  child: TextField(
+                    inputFormatters: [ FilteringTextInputFormatter.allow(RegExp(r'^\d+\.?\d{0,1}')) ],
+                    decoration: InputDecoration(
+                      labelText: 'Night'
+                    ),
+                    keyboardType: TextInputType.number
+                  ),
+                ),
+                SizedBox(width: 10),
+                Container(
+                  width: 75,
+                  child: TextField(
+                    decoration: InputDecoration(
+                      labelText: 'Instr.'
+                    ),
+                    keyboardType: TextInputType.number
+                  ),
+                ),
+                SizedBox(width: 10),
+                Container(
+                  width: 75,
+                  child: TextField(
+                    decoration: InputDecoration(
+                      labelText: 'Sim Instr.'
+                    ),
+                    keyboardType: TextInputType.number
+                  ),
+                ),
+              ],
+            ),
+
+            Row(
+              children: [
+                Container(
+                  width: 75,
+                  child: TextField(
+                    decoration: InputDecoration(
+                      labelText: 'Flight Sim'
+                    ),
+                    keyboardType: TextInputType.number
+                  ),
+                ),
+                SizedBox(width: 10),
+                Container(
+                  width: 75,
+                  child: TextField(
+                    decoration: InputDecoration(
+                      labelText: 'X Country'
+                    ),
+                    keyboardType: TextInputType.number
+                  ),
+                ),
+                SizedBox(width: 10),
+                Container(
+                  width: 75,
+                  child: TextField(
+                    decoration: InputDecoration(
+                      labelText: 'Instructor'
+                    ),
+                    keyboardType: TextInputType.number
+                  ),
+                ),
+              ],
+            ),
+
+
+            Row(
+              children: [
+                Container(
+                  width: 75,
+                  child: TextField(
+                    decoration: InputDecoration(
+                      labelText: 'Dual'
+                    ),
+                    keyboardType: TextInputType.number
+                  ),
+                ),
+                SizedBox(width: 10),
+                Container(
+                  width: 75,
+                  child: TextField(
+                    decoration: InputDecoration(
+                      labelText: 'PIC'
+                    ),
+                    keyboardType: TextInputType.number
+                  ),
+                ),
+                SizedBox(width: 10),
+                Container(
+                  width: 75,
+                  child: TextField(
+                    decoration: InputDecoration(
+                      labelText: 'Total'
+                    ),
+                    keyboardType: TextInputType.number
+                  ),
+                ),
+              ],
+            ),
+
+
+
+          ],
         ),
       ),
 
       Step(
         title: const Text('Remarks'),
         isActive: currentStep == 5,
-        state: StepState.editing,
+        state: remarksStepState,
         content: Column(
-          children: [],
+          children: [
+            TextField(
+              minLines: 3,
+              maxLines: 3,
+              controller: remarksTextController,
+              onChanged: (text) {
+                setState(() {
+                  remarksStepState = text == '' ? StepState.editing : StepState.complete;
+                });
+              },
+            )
+          ],
         ),
       ),
 
