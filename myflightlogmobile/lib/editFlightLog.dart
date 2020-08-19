@@ -36,6 +36,7 @@ class _EditFlightLogPageState extends State<EditFlightLogPage> {
   StepState remarksStepState = StepState.editing;
 
   // New flight log data
+  bool _favorite = false;
   DateTime _date = DateTime.now();
   String _aircraft;
   List<String> _stops = [];
@@ -427,6 +428,15 @@ class _EditFlightLogPageState extends State<EditFlightLogPage> {
         state: remarksStepState,
         content: Column(
           children: [
+            CheckboxListTile(
+              title: Text('Mark as Favorite'),
+              value: _favorite,
+              onChanged: (value) {
+                setState(() {
+                  _favorite = value;
+                });
+              },
+            ),
             TextField(
               minLines: 3,
               maxLines: 3,
