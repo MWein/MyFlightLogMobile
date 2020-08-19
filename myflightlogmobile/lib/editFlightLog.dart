@@ -42,6 +42,15 @@ class _EditFlightLogPageState extends State<EditFlightLogPage> {
   int _takeoffs = 0;
   int _landings = 0;
   final remarksTextController = TextEditingController();
+  final nightTextController = TextEditingController();
+  final instrumentTextController = TextEditingController();
+  final simInstrumentTextController = TextEditingController();
+  final flightSimTextController = TextEditingController();
+  final crossCountryTextController = TextEditingController();
+  final instructorTextController = TextEditingController();
+  final dualTextController = TextEditingController();
+  final pilotInCommandTextController = TextEditingController();
+  final totalTextController = TextEditingController();
 
 
   void addStop() async {
@@ -225,6 +234,8 @@ class _EditFlightLogPageState extends State<EditFlightLogPage> {
         state: StepState.complete,
         content: Column(
           children: [
+            // TODO Write a component class for the below
+
             Row(
               mainAxisAlignment: MainAxisAlignment.center,
               children: [
@@ -284,13 +295,14 @@ class _EditFlightLogPageState extends State<EditFlightLogPage> {
         state: StepState.editing,
         content: Column(
           children: [
-
+            // TODO Refactor to use a map or something... this is kind of terrible
 
             Row(
               children: [
                 Container(
                   width: 75,
                   child: TextField(
+                    controller: nightTextController,
                     inputFormatters: [ FilteringTextInputFormatter.allow(RegExp(r'^\d+\.?\d{0,1}')) ],
                     decoration: InputDecoration(
                       labelText: 'Night'
@@ -302,6 +314,8 @@ class _EditFlightLogPageState extends State<EditFlightLogPage> {
                 Container(
                   width: 75,
                   child: TextField(
+                    controller: instrumentTextController,
+                    inputFormatters: [ FilteringTextInputFormatter.allow(RegExp(r'^\d+\.?\d{0,1}')) ],
                     decoration: InputDecoration(
                       labelText: 'Instr.'
                     ),
@@ -312,6 +326,8 @@ class _EditFlightLogPageState extends State<EditFlightLogPage> {
                 Container(
                   width: 75,
                   child: TextField(
+                    controller: simInstrumentTextController,
+                    inputFormatters: [ FilteringTextInputFormatter.allow(RegExp(r'^\d+\.?\d{0,1}')) ],
                     decoration: InputDecoration(
                       labelText: 'Sim Instr.'
                     ),
@@ -326,6 +342,8 @@ class _EditFlightLogPageState extends State<EditFlightLogPage> {
                 Container(
                   width: 75,
                   child: TextField(
+                    controller: flightSimTextController,
+                    inputFormatters: [ FilteringTextInputFormatter.allow(RegExp(r'^\d+\.?\d{0,1}')) ],
                     decoration: InputDecoration(
                       labelText: 'Flight Sim'
                     ),
@@ -336,6 +354,8 @@ class _EditFlightLogPageState extends State<EditFlightLogPage> {
                 Container(
                   width: 75,
                   child: TextField(
+                    controller: crossCountryTextController,
+                    inputFormatters: [ FilteringTextInputFormatter.allow(RegExp(r'^\d+\.?\d{0,1}')) ],
                     decoration: InputDecoration(
                       labelText: 'X Country'
                     ),
@@ -346,6 +366,8 @@ class _EditFlightLogPageState extends State<EditFlightLogPage> {
                 Container(
                   width: 75,
                   child: TextField(
+                    controller: instructorTextController,
+                    inputFormatters: [ FilteringTextInputFormatter.allow(RegExp(r'^\d+\.?\d{0,1}')) ],
                     decoration: InputDecoration(
                       labelText: 'Instructor'
                     ),
@@ -361,6 +383,8 @@ class _EditFlightLogPageState extends State<EditFlightLogPage> {
                 Container(
                   width: 75,
                   child: TextField(
+                    controller: dualTextController,
+                    inputFormatters: [ FilteringTextInputFormatter.allow(RegExp(r'^\d+\.?\d{0,1}')) ],
                     decoration: InputDecoration(
                       labelText: 'Dual'
                     ),
@@ -371,6 +395,8 @@ class _EditFlightLogPageState extends State<EditFlightLogPage> {
                 Container(
                   width: 75,
                   child: TextField(
+                    controller: pilotInCommandTextController,
+                    inputFormatters: [ FilteringTextInputFormatter.allow(RegExp(r'^\d+\.?\d{0,1}')) ],
                     decoration: InputDecoration(
                       labelText: 'PIC'
                     ),
@@ -381,6 +407,8 @@ class _EditFlightLogPageState extends State<EditFlightLogPage> {
                 Container(
                   width: 75,
                   child: TextField(
+                    controller: totalTextController,
+                    inputFormatters: [ FilteringTextInputFormatter.allow(RegExp(r'^\d+\.?\d{0,1}')) ],
                     decoration: InputDecoration(
                       labelText: 'Total'
                     ),
@@ -389,9 +417,6 @@ class _EditFlightLogPageState extends State<EditFlightLogPage> {
                 ),
               ],
             ),
-
-
-
           ],
         ),
       ),
