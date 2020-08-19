@@ -16,14 +16,14 @@ class UpperCaseTextFormatter extends TextInputFormatter {
 }
 
 
-class FlightLogPage extends StatefulWidget {
-  FlightLogPage() : super();
+class EditFlightLogPage extends StatefulWidget {
+  EditFlightLogPage() : super();
 
   @override
-  _FlightLogPageState createState() => _FlightLogPageState();
+  _EditFlightLogPageState createState() => _EditFlightLogPageState();
 }
 
-class _FlightLogPageState extends State<FlightLogPage> {
+class _EditFlightLogPageState extends State<EditFlightLogPage> {
   final DateFormat _dateFormatter = DateFormat('dd MMM, yyyy');
   Future<List<String>> aircraftIdents;
 
@@ -38,7 +38,6 @@ class _FlightLogPageState extends State<FlightLogPage> {
   List<String> _stops = [];
   int _takeoffs = 0;
   int _landings = 0;
-
 
 
   void addStop() async {
@@ -63,6 +62,28 @@ class _FlightLogPageState extends State<FlightLogPage> {
   }
 
 
+
+
+  // Stepper state
+  int currentStep = 0;
+  bool complete = false;
+
+  next() {
+    currentStep + 1 != 7 ? goTo(currentStep + 1) : setState(() => complete = true);
+  }
+
+  goTo(int step) {
+    setState(() => currentStep = step);
+  }
+
+  cancel() {
+    if (currentStep > 0) {
+      goTo(currentStep - 1);
+    }
+  }
+
+
+
   @override
   void initState() {
     super.initState();
@@ -72,77 +93,77 @@ class _FlightLogPageState extends State<FlightLogPage> {
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      appBar: AppBar(
-        title: Text('New Flight Log'),
-      ),
-      body: Center(
-        child: Column(
+    List<Step> steps = [
+      Step(
+        title: const Text('Date'),
+        isActive: currentStep == 0,
+        state: StepState.complete,
+        content: Column(
           mainAxisAlignment: MainAxisAlignment.start,
-          children: <Widget>[
-            SizedBox(height: 50),
+          children: [
+            RaisedButton(
+              child: Text(_dateFormatter.format(_date)),
+              onPressed: () {
+                showDatePicker(context: context, initialDate: _date, firstDate: DateTime(2018), lastDate: DateTime(2050))
+                .then((date) {
+                  setState(() {
+                    _date = date == null ? _date : date;
+                  });
+                });
+              },
+            )
+          ],
+        ),
+      ),
 
-            // Date and Aircraft
-
-            Row(
-              mainAxisAlignment: MainAxisAlignment.center,
-              children: <Widget>[
-                RaisedButton(
-                  child: Text(_dateFormatter.format(_date)),
-                  onPressed: () {
-                    showDatePicker(context: context, initialDate: _date, firstDate: DateTime(2018), lastDate: DateTime(2050))
-                      .then((date) {
-                        setState(() {
-                          _date = date == null ? _date : date;
-                        });
+      Step(
+        title: const Text('Aircraft'),
+        isActive: currentStep == 1,
+        state: _aircraft != null ? StepState.complete : StepState.editing,
+        content: Row(
+          children: [
+            FutureBuilder(
+              future: aircraftIdents,
+              builder: (context, snapshot) {
+                if (snapshot.hasData) {
+                  return DropdownButton<String>(
+                    value: _aircraft,
+                    onChanged: (String newValue) {
+                      setState(() {
+                        _aircraft = newValue;
                       });
-                  },
-                ),
+                    },
+                    items: snapshot.data
+                      .map<DropdownMenuItem<String>>((value) {
+                        return DropdownMenuItem<String>(
+                          value: value,
+                          child: Text(value),
+                        );
+                      }).toList(),
+                  );
+                } else if (snapshot.hasError) {
+                  return Text('Could not load aircraft');
+                }
 
-                SizedBox(width: 40),
-
-                FutureBuilder(
-                  future: aircraftIdents,
-                  builder: (context, snapshot) {
-                    if (snapshot.hasData) {
-                      return DropdownButton<String>(
-                        value: _aircraft,
-                        onChanged: (String newValue) {
-                          setState(() {
-                            _aircraft = newValue;
-                          });
-                        },
-                        items: snapshot.data
-                          .map<DropdownMenuItem<String>>((value) {
-                            return DropdownMenuItem<String>(
-                              value: value,
-                              child: Text(value),
-                            );
-                          }).toList(),
-                      );
-                    } else if (snapshot.hasError) {
-                      return Text('Could not load aircraft');
-                    }
-
-                    return CircularProgressIndicator();
-                  }
-                ),
-
-
-                SizedBox(width: 20),
-
-                RaisedButton(
-                  child: Text('New')
-                ),
-              ],
+                return CircularProgressIndicator();
+              }
             ),
 
+            SizedBox(width: 20),
 
-            SizedBox(height: 50),
+            RaisedButton(
+              child: Text('New Aircraft')
+            ),
+          ],
+        ),
+      ),
 
-
-            // Stops
-
+      Step(
+        title: const Text('Stops'),
+        isActive: currentStep == 2,
+        state: _stops.length > 0 ? StepState.complete : StepState.editing,
+        content: Column(
+          children: [
             Wrap(
               spacing: 8.0,
               children: _stops.map((String stop) {
@@ -189,13 +210,16 @@ class _FlightLogPageState extends State<FlightLogPage> {
                 ),
               ]
             ),
+          ],
+        ),
+      ),
 
-
-            SizedBox(height: 50),
-
-
-            // Takeoffs and Landings
-
+      Step(
+        title: const Text('Takeoffs and Landings'),
+        isActive: currentStep == 3,
+        state: StepState.complete,
+        content: Column(
+          children: [
             Row(
               mainAxisAlignment: MainAxisAlignment.center,
               children: [
@@ -245,9 +269,56 @@ class _FlightLogPageState extends State<FlightLogPage> {
                 )
               ],
             ),
+          ],
+        ),
+      ),
+
+      Step(
+        title: const Text('Hours'),
+        isActive: currentStep == 4,
+        state: StepState.editing,
+        content: Column(
+          children: [],
+        ),
+      ),
+
+      Step(
+        title: const Text('Remarks'),
+        isActive: currentStep == 5,
+        state: StepState.editing,
+        content: Column(
+          children: [],
+        ),
+      ),
+
+      Step(
+        title: const Text('Photos'),
+        isActive: currentStep == 6,
+        state: StepState.editing,
+        content: Column(
+          children: [],
+        ),
+      ),
+    ];
 
 
 
+    return Scaffold(
+      appBar: AppBar(
+        title: Text('New Flight Log'),
+      ),
+      body: Center(
+        child: Column(
+          children: [
+            Expanded(
+              child: Stepper(
+                steps: steps,
+                currentStep: currentStep,
+                onStepContinue: next,
+                onStepCancel: cancel,
+                onStepTapped: (step) => goTo(step),
+              ),
+            ),
           ],
         ),
       ),// This trailing comma makes auto-formatting nicer for build methods.

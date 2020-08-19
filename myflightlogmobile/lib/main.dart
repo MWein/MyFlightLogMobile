@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import './flightLog.dart';
+import './editFlightLog.dart';
 
 void main() => runApp(MyApp());
 
@@ -16,7 +16,7 @@ class MyApp extends StatelessWidget {
       initialRoute: '/',
       routes: {
         '/': (context) => MyHomePage(),
-        '/flight': (context) => FlightLogPage(),
+        '/flight': (context) => EditFlightLogPage(),
       }
     );
   }
