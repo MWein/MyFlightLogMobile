@@ -36,6 +36,8 @@ class _FlightLogPageState extends State<FlightLogPage> {
   DateTime _date = DateTime.now();
   String _aircraft;
   List<String> _stops = [];
+  int _takeoffs = 0;
+  int _landings = 0;
 
 
 
@@ -79,6 +81,8 @@ class _FlightLogPageState extends State<FlightLogPage> {
           mainAxisAlignment: MainAxisAlignment.start,
           children: <Widget>[
             SizedBox(height: 50),
+
+            // Date and Aircraft
 
             Row(
               mainAxisAlignment: MainAxisAlignment.center,
@@ -137,6 +141,8 @@ class _FlightLogPageState extends State<FlightLogPage> {
             SizedBox(height: 50),
 
 
+            // Stops
+
             Wrap(
               spacing: 8.0,
               children: _stops.map((String stop) {
@@ -182,6 +188,62 @@ class _FlightLogPageState extends State<FlightLogPage> {
                   onPressed: _removeButtonEnabled ? removeStop : null,
                 ),
               ]
+            ),
+
+
+            SizedBox(height: 50),
+
+
+            // Takeoffs and Landings
+
+            Row(
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: [
+                Text('Takeoffs: $_takeoffs'),
+                SizedBox(width: 20),
+                RaisedButton(
+                  child: Text('-'),
+                  onPressed: _takeoffs > 0 ? () {
+                    setState(() {
+                      _takeoffs--;
+                    });
+                  } : null,
+                ),
+                SizedBox(width: 5),
+                RaisedButton(
+                  child: Text('+'),
+                  onPressed: () {
+                    setState(() {
+                      _takeoffs++;
+                    });
+                  },
+                )
+              ],
+            ),
+
+            Row(
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: [
+                Text('Landings: $_landings'),
+                SizedBox(width: 20),
+                RaisedButton(
+                  child: Text('-'),
+                  onPressed: _landings > 0 ? () {
+                    setState(() {
+                      _landings--;
+                    });
+                  } : null,
+                ),
+                SizedBox(width: 5),
+                RaisedButton(
+                  child: Text('+'),
+                  onPressed: () {
+                    setState(() {
+                      _landings++;
+                    });
+                  },
+                )
+              ],
             ),
 
 
