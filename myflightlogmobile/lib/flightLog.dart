@@ -1,6 +1,20 @@
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 import './network/fetchAircraft.dart';
+import 'package:flutter/services.dart';
+import './network/verifyAirport.dart';
+
+
+class UpperCaseTextFormatter extends TextInputFormatter {
+  @override
+  TextEditingValue formatEditUpdate(TextEditingValue oldValue, TextEditingValue newValue) {
+    return TextEditingValue(
+      text: newValue.text?.toUpperCase(),
+      selection: newValue.selection,
+    );
+  }
+}
+
 
 class FlightLogPage extends StatefulWidget {
   FlightLogPage() : super();
@@ -10,13 +24,41 @@ class FlightLogPage extends StatefulWidget {
 }
 
 class _FlightLogPageState extends State<FlightLogPage> {
-  DateFormat _dateFormatter = DateFormat('dd MMM, yyyy');
+  final DateFormat _dateFormatter = DateFormat('dd MMM, yyyy');
   Future<List<String>> aircraftIdents;
+
+  // Stop editing
+  bool _addButtonEnabled = false;
+  bool _removeButtonEnabled = false;
+  final stopTextController = TextEditingController();
 
   // New flight log data
   DateTime _date = DateTime.now();
   String _aircraft;
-  List<String> _stops = [ 'KSET', 'KJOT', 'KSET' ];
+  List<String> _stops = [];
+
+
+
+  void addStop() async {
+    bool verified = await verifyAirport(stopTextController.text, _stops);
+
+    if (verified) {
+      setState(() {
+        _stops.add(stopTextController.text);
+        _addButtonEnabled = false;
+        _removeButtonEnabled = true;
+      });
+
+      stopTextController.text = '';
+    }
+  }
+
+  void removeStop() {
+    setState(() {
+      _stops.removeLast();
+      _removeButtonEnabled = _stops.length > 0;
+    });
+  }
 
 
   @override
@@ -36,7 +78,7 @@ class _FlightLogPageState extends State<FlightLogPage> {
         child: Column(
           mainAxisAlignment: MainAxisAlignment.start,
           children: <Widget>[
-
+            SizedBox(height: 50),
 
             Row(
               mainAxisAlignment: MainAxisAlignment.center,
@@ -58,7 +100,6 @@ class _FlightLogPageState extends State<FlightLogPage> {
                 FutureBuilder(
                   future: aircraftIdents,
                   builder: (context, snapshot) {
-                    print(snapshot.data);
                     if (snapshot.hasData) {
                       return DropdownButton<String>(
                         value: _aircraft,
@@ -113,13 +154,33 @@ class _FlightLogPageState extends State<FlightLogPage> {
                   width: 70.0,
                   child: TextField(
                     maxLength: 4,
+                    textCapitalization: TextCapitalization.characters,
                     textAlign: TextAlign.center,
+                    controller: stopTextController,
+                    inputFormatters: [
+                      UpperCaseTextFormatter(),
+                    ],
+                    onChanged: (text) {
+                      setState(() {
+                        _addButtonEnabled = stopTextController.text.length == 4;
+                      });
+                    },
                   ),
                 ),
 
                 SizedBox(width: 20),
                 
-                RaisedButton(child: Text('Add')),
+                RaisedButton(
+                  child: Text('Add'),
+                  onPressed: _addButtonEnabled ? addStop : null,
+                ),
+
+                SizedBox(width: 5),
+
+                RaisedButton(
+                  child: Text('Remove'),
+                  onPressed: _removeButtonEnabled ? removeStop : null,
+                ),
               ]
             ),
 
