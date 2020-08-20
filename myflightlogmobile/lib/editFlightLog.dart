@@ -43,6 +43,7 @@ class _EditFlightLogPageState extends State<EditFlightLogPage> {
   int _takeoffs = 0;
   int _landings = 0;
   final remarksTextController = TextEditingController();
+
   final nightTextController = TextEditingController();
   final instrumentTextController = TextEditingController();
   final simInstrumentTextController = TextEditingController();
@@ -108,6 +109,39 @@ class _EditFlightLogPageState extends State<EditFlightLogPage> {
 
   @override
   Widget build(BuildContext context) {
+    Map<String, TextEditingController> hoursMap = {
+      'Night': nightTextController,
+      'Instr.': instrumentTextController,
+      'Sim Instr.': simInstrumentTextController,
+      'Flight Sim': flightSimTextController,
+      'X Country': crossCountryTextController,
+      'Instructor': instructorTextController,
+      'Dual': dualTextController,
+      'PIC': pilotInCommandTextController,
+      'Total': totalTextController,
+    };
+
+    List<Widget> hoursWidgets = [];
+
+    hoursMap.forEach((key, value) {
+      hoursWidgets.add(
+        Container(
+          width: 75,
+          child: TextField(
+            controller: value,
+            inputFormatters: [ FilteringTextInputFormatter.allow(RegExp(r'^\d+\.?\d{0,1}')) ],
+            decoration: InputDecoration(
+              labelText: key
+            ),
+            keyboardType: TextInputType.number
+          ),
+        ),
+      );
+
+      hoursWidgets.add(SizedBox(width: 10));
+    });
+
+
     List<Step> steps = [
       Step(
         title: const Text('Date'),
@@ -296,127 +330,8 @@ class _EditFlightLogPageState extends State<EditFlightLogPage> {
         state: StepState.editing,
         content: Column(
           children: [
-            // TODO Refactor to use a map or something... this is kind of terrible
-
-            Row(
-              children: [
-                Container(
-                  width: 75,
-                  child: TextField(
-                    controller: nightTextController,
-                    inputFormatters: [ FilteringTextInputFormatter.allow(RegExp(r'^\d+\.?\d{0,1}')) ],
-                    decoration: InputDecoration(
-                      labelText: 'Night'
-                    ),
-                    keyboardType: TextInputType.number
-                  ),
-                ),
-                SizedBox(width: 10),
-                Container(
-                  width: 75,
-                  child: TextField(
-                    controller: instrumentTextController,
-                    inputFormatters: [ FilteringTextInputFormatter.allow(RegExp(r'^\d+\.?\d{0,1}')) ],
-                    decoration: InputDecoration(
-                      labelText: 'Instr.'
-                    ),
-                    keyboardType: TextInputType.number
-                  ),
-                ),
-                SizedBox(width: 10),
-                Container(
-                  width: 75,
-                  child: TextField(
-                    controller: simInstrumentTextController,
-                    inputFormatters: [ FilteringTextInputFormatter.allow(RegExp(r'^\d+\.?\d{0,1}')) ],
-                    decoration: InputDecoration(
-                      labelText: 'Sim Instr.'
-                    ),
-                    keyboardType: TextInputType.number
-                  ),
-                ),
-              ],
-            ),
-
-            Row(
-              children: [
-                Container(
-                  width: 75,
-                  child: TextField(
-                    controller: flightSimTextController,
-                    inputFormatters: [ FilteringTextInputFormatter.allow(RegExp(r'^\d+\.?\d{0,1}')) ],
-                    decoration: InputDecoration(
-                      labelText: 'Flight Sim'
-                    ),
-                    keyboardType: TextInputType.number
-                  ),
-                ),
-                SizedBox(width: 10),
-                Container(
-                  width: 75,
-                  child: TextField(
-                    controller: crossCountryTextController,
-                    inputFormatters: [ FilteringTextInputFormatter.allow(RegExp(r'^\d+\.?\d{0,1}')) ],
-                    decoration: InputDecoration(
-                      labelText: 'X Country'
-                    ),
-                    keyboardType: TextInputType.number
-                  ),
-                ),
-                SizedBox(width: 10),
-                Container(
-                  width: 75,
-                  child: TextField(
-                    controller: instructorTextController,
-                    inputFormatters: [ FilteringTextInputFormatter.allow(RegExp(r'^\d+\.?\d{0,1}')) ],
-                    decoration: InputDecoration(
-                      labelText: 'Instructor'
-                    ),
-                    keyboardType: TextInputType.number
-                  ),
-                ),
-              ],
-            ),
-
-
-            Row(
-              children: [
-                Container(
-                  width: 75,
-                  child: TextField(
-                    controller: dualTextController,
-                    inputFormatters: [ FilteringTextInputFormatter.allow(RegExp(r'^\d+\.?\d{0,1}')) ],
-                    decoration: InputDecoration(
-                      labelText: 'Dual'
-                    ),
-                    keyboardType: TextInputType.number
-                  ),
-                ),
-                SizedBox(width: 10),
-                Container(
-                  width: 75,
-                  child: TextField(
-                    controller: pilotInCommandTextController,
-                    inputFormatters: [ FilteringTextInputFormatter.allow(RegExp(r'^\d+\.?\d{0,1}')) ],
-                    decoration: InputDecoration(
-                      labelText: 'PIC'
-                    ),
-                    keyboardType: TextInputType.number
-                  ),
-                ),
-                SizedBox(width: 10),
-                Container(
-                  width: 75,
-                  child: TextField(
-                    controller: totalTextController,
-                    inputFormatters: [ FilteringTextInputFormatter.allow(RegExp(r'^\d+\.?\d{0,1}')) ],
-                    decoration: InputDecoration(
-                      labelText: 'Total'
-                    ),
-                    keyboardType: TextInputType.number
-                  ),
-                ),
-              ],
+            Wrap(
+              children: hoursWidgets,
             ),
           ],
         ),
@@ -454,7 +369,7 @@ class _EditFlightLogPageState extends State<EditFlightLogPage> {
       Step(
         title: const Text('Photos'),
         isActive: currentStep == 6,
-        state: StepState.editing,
+        state: StepState.complete,
         content: Column(
           children: [],
         ),
