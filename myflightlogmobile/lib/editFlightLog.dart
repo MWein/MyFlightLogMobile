@@ -3,6 +3,7 @@ import 'package:intl/intl.dart';
 import './network/fetchAircraft.dart';
 import 'package:flutter/services.dart';
 import './network/verifyAirport.dart';
+import './network/saveFlightLog.dart';
 
 
 class UpperCaseTextFormatter extends TextInputFormatter {
@@ -24,6 +25,7 @@ class EditFlightLogPage extends StatefulWidget {
 }
 
 class _EditFlightLogPageState extends State<EditFlightLogPage> {
+  bool saving = false;
   final DateFormat _dateFormatter = DateFormat('dd MMMM, yyyy');
   Future<List<String>> aircraftIdents;
 
@@ -74,9 +76,7 @@ class _EditFlightLogPageState extends State<EditFlightLogPage> {
       stopTextController.text = '';
     }
 
-    setState(() {
-      _verifyingAirport = false;
-    });
+    setState(() => _verifyingAirport = false);
   }
 
   void removeStop() {
@@ -122,8 +122,22 @@ class _EditFlightLogPageState extends State<EditFlightLogPage> {
   int currentStep = 0;
   bool complete = false;
 
-  next() {
-    currentStep + 1 != 7 ? goTo(currentStep + 1) : setState(() => complete = true);
+  next() async {
+    if (currentStep == 6 && _aircraft != '' && _stops.length > 0 && totalTextController.text != '' && remarksTextController.text != '') {
+      setState(() => {
+        complete = true,
+        saving = true,
+      });
+
+      Map<String, double> hours = createHoursMap();
+      await saveFlightLog(_date, _favorite, _aircraft, _stops, _takeoffs, _landings, hours, remarksTextController.text);
+
+      setState(() => saving = false);
+    }
+
+    if (currentStep + 1 != 7) {
+      goTo(currentStep + 1);
+    }
   }
 
   goTo(int step) {
@@ -169,9 +183,7 @@ class _EditFlightLogPageState extends State<EditFlightLogPage> {
           child: TextField(
             controller: value,
             inputFormatters: [ FilteringTextInputFormatter.allow(RegExp(r'^\d+\.?\d{0,1}')) ],
-            onChanged: (value) {
-              updateTotal();
-            },
+            onChanged: (value) => updateTotal(),
             decoration: InputDecoration(
               labelText: key
             ),
@@ -196,9 +208,7 @@ class _EditFlightLogPageState extends State<EditFlightLogPage> {
               onPressed: () {
                 showDatePicker(context: context, initialDate: _date, firstDate: DateTime(2018), lastDate: DateTime.now())
                 .then((date) {
-                  setState(() {
-                    _date = date == null ? _date : date;
-                  });
+                  setState(() => _date = date == null ? _date : date);
                 });
               },
             )
@@ -219,9 +229,7 @@ class _EditFlightLogPageState extends State<EditFlightLogPage> {
                   return DropdownButton<String>(
                     value: _aircraft,
                     onChanged: (String newValue) {
-                      setState(() {
-                        _aircraft = newValue;
-                      });
+                      setState(() => _aircraft = newValue);
                     },
                     items: snapshot.data
                       .map<DropdownMenuItem<String>>((value) {
@@ -295,9 +303,7 @@ class _EditFlightLogPageState extends State<EditFlightLogPage> {
                       UpperCaseTextFormatter(),
                     ],
                     onChanged: (text) {
-                      setState(() {
-                        _addButtonEnabled = stopTextController.text.length == 4;
-                      });
+                      setState(() => _addButtonEnabled = stopTextController.text.length == 4);
                     },
                   ),
                 ),
@@ -342,9 +348,7 @@ class _EditFlightLogPageState extends State<EditFlightLogPage> {
                   child: RaisedButton(
                     child: Text('-'),
                     onPressed: _takeoffs > 0 ? () {
-                      setState(() {
-                        _takeoffs--;
-                      });
+                      setState(() => _takeoffs--);
                     } : null,
                   ),
                 ),
@@ -354,9 +358,7 @@ class _EditFlightLogPageState extends State<EditFlightLogPage> {
                   child: RaisedButton(
                     child: Text('+'),
                     onPressed: () {
-                      setState(() {
-                        _takeoffs++;
-                      });
+                      setState(() => _takeoffs++);
                     },
                   )
                 )
@@ -373,9 +375,7 @@ class _EditFlightLogPageState extends State<EditFlightLogPage> {
                   child: RaisedButton(
                     child: Text('-'),
                     onPressed: _landings > 0 ? () {
-                      setState(() {
-                        _landings--;
-                      });
+                      setState(() => _landings--);
                     } : null,
                   ),
                 ),
@@ -385,9 +385,7 @@ class _EditFlightLogPageState extends State<EditFlightLogPage> {
                   child: RaisedButton(
                     child: Text('+'),
                     onPressed: () {
-                      setState(() {
-                        _landings++;
-                      });
+                      setState(() => _landings++);
                     },
                   )
                 )
@@ -420,9 +418,7 @@ class _EditFlightLogPageState extends State<EditFlightLogPage> {
               title: Text('Mark as Favorite'),
               value: _favorite,
               onChanged: (value) {
-                setState(() {
-                  _favorite = value;
-                });
+                setState(() => _favorite = value);
               },
             ),
             TextField(
@@ -430,9 +426,7 @@ class _EditFlightLogPageState extends State<EditFlightLogPage> {
               maxLines: 3,
               controller: remarksTextController,
               onChanged: (text) {
-                setState(() {
-                  remarksStepState = text == '' ? StepState.editing : StepState.complete;
-                });
+                setState(() => remarksStepState = text == '' ? StepState.editing : StepState.complete);
               },
             )
           ],
@@ -458,6 +452,22 @@ class _EditFlightLogPageState extends State<EditFlightLogPage> {
       body: Center(
         child: Column(
           children: [
+            complete ? Expanded(
+              child: Center(
+                child: AlertDialog(
+                  title: saving ? Text('Saving Flight Log') : Text('Saved Flight Log'),
+                  content: saving ? Container(height: 50, child: Center(child: CircularProgressIndicator())) : null,
+                  actions: saving ? [] : [
+                    RaisedButton(
+                      child: Text('Close'),
+                      onPressed: () {
+                        Navigator.pop(context);
+                      }
+                    )
+                  ],
+                )
+              )
+            ) :
             Expanded(
               child: Stepper(
                 steps: steps,
