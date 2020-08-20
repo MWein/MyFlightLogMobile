@@ -28,6 +28,7 @@ class _EditFlightLogPageState extends State<EditFlightLogPage> {
   Future<List<String>> aircraftIdents;
 
   // Stop editing
+  bool _verifyingAirport = false;
   bool _addButtonEnabled = false;
   bool _removeButtonEnabled = false;
   final stopTextController = TextEditingController();
@@ -56,6 +57,11 @@ class _EditFlightLogPageState extends State<EditFlightLogPage> {
 
 
   void addStop() async {
+    setState(() {
+      _verifyingAirport = true;
+      _addButtonEnabled = false;
+    });
+
     bool verified = await verifyAirport(stopTextController.text, _stops);
 
     if (verified) {
@@ -67,6 +73,10 @@ class _EditFlightLogPageState extends State<EditFlightLogPage> {
 
       stopTextController.text = '';
     }
+
+    setState(() {
+      _verifyingAirport = false;
+    });
   }
 
   void removeStop() {
@@ -77,6 +87,35 @@ class _EditFlightLogPageState extends State<EditFlightLogPage> {
   }
 
 
+  Map<String, double> createHoursMap() {
+    return {
+      'night': double.tryParse(nightTextController.text) ?? 0,
+      'instrument': double.tryParse(instrumentTextController.text) ?? 0,
+      'simInstrument': double.tryParse(simInstrumentTextController.text) ?? 0,
+      'flightSim': double.tryParse(flightSimTextController.text) ?? 0,
+      'crossCountry': double.tryParse(crossCountryTextController.text) ?? 0,
+      'instructor': double.tryParse(instructorTextController.text) ?? 0,
+      'dual': double.tryParse(dualTextController.text) ?? 0,
+      'pic': double.tryParse(pilotInCommandTextController.text) ?? 0,
+      'total': double.tryParse(totalTextController.text) ?? 0,
+    };
+  }
+
+
+  void updateTotal() {
+    double highestValue = 0;
+    Map<String, double> hours = createHoursMap();
+
+    hours.forEach((key, value) {
+      if (value > highestValue) {
+        highestValue = value;
+      }
+    });
+
+    if (hours['total'] < highestValue) {
+      totalTextController.text = '$highestValue';
+    }
+  }
 
 
   // Stepper state
@@ -111,11 +150,11 @@ class _EditFlightLogPageState extends State<EditFlightLogPage> {
   Widget build(BuildContext context) {
     Map<String, TextEditingController> hoursMap = {
       'Night': nightTextController,
-      'Instr.': instrumentTextController,
-      'Sim Instr.': simInstrumentTextController,
-      'Flight Sim': flightSimTextController,
-      'X Country': crossCountryTextController,
-      'Instructor': instructorTextController,
+      'IFR': instrumentTextController,
+      'Hood': simInstrumentTextController,
+      'Sim': flightSimTextController,
+      'XC': crossCountryTextController,
+      'Instr.': instructorTextController,
       'Dual': dualTextController,
       'PIC': pilotInCommandTextController,
       'Total': totalTextController,
@@ -130,6 +169,9 @@ class _EditFlightLogPageState extends State<EditFlightLogPage> {
           child: TextField(
             controller: value,
             inputFormatters: [ FilteringTextInputFormatter.allow(RegExp(r'^\d+\.?\d{0,1}')) ],
+            onChanged: (value) {
+              updateTotal();
+            },
             decoration: InputDecoration(
               labelText: key
             ),
@@ -222,6 +264,22 @@ class _EditFlightLogPageState extends State<EditFlightLogPage> {
             ),
 
 
+            (() {
+              if (_verifyingAirport) {
+                return Row(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children: [
+                    Text('Verifying'),
+                    SizedBox(width: 15),
+                    CircularProgressIndicator(),
+                  ]
+                );
+              } else {
+                return Text('');
+              }
+            }()),
+
+
             Row(
               mainAxisAlignment: MainAxisAlignment.center,
               children: <Widget>[
@@ -245,10 +303,13 @@ class _EditFlightLogPageState extends State<EditFlightLogPage> {
                 ),
 
                 SizedBox(width: 20),
-                
-                RaisedButton(
-                  child: Text('Add'),
-                  onPressed: _addButtonEnabled ? addStop : null,
+
+                Container(
+                  width: 75,
+                  child: RaisedButton(
+                    child: Text('Add'),
+                    onPressed: _addButtonEnabled ? addStop : null,
+                  ),
                 ),
 
                 SizedBox(width: 5),
@@ -276,22 +337,28 @@ class _EditFlightLogPageState extends State<EditFlightLogPage> {
               children: [
                 Text('Takeoffs: $_takeoffs'),
                 SizedBox(width: 20),
-                RaisedButton(
-                  child: Text('-'),
-                  onPressed: _takeoffs > 0 ? () {
-                    setState(() {
-                      _takeoffs--;
-                    });
-                  } : null,
+                Container(
+                  width: 40,
+                  child: RaisedButton(
+                    child: Text('-'),
+                    onPressed: _takeoffs > 0 ? () {
+                      setState(() {
+                        _takeoffs--;
+                      });
+                    } : null,
+                  ),
                 ),
                 SizedBox(width: 5),
-                RaisedButton(
-                  child: Text('+'),
-                  onPressed: () {
-                    setState(() {
-                      _takeoffs++;
-                    });
-                  },
+                Container(
+                  width: 40,
+                  child: RaisedButton(
+                    child: Text('+'),
+                    onPressed: () {
+                      setState(() {
+                        _takeoffs++;
+                      });
+                    },
+                  )
                 )
               ],
             ),
@@ -301,22 +368,28 @@ class _EditFlightLogPageState extends State<EditFlightLogPage> {
               children: [
                 Text('Landings: $_landings'),
                 SizedBox(width: 20),
-                RaisedButton(
-                  child: Text('-'),
-                  onPressed: _landings > 0 ? () {
-                    setState(() {
-                      _landings--;
-                    });
-                  } : null,
+                Container(
+                  width: 40,
+                  child: RaisedButton(
+                    child: Text('-'),
+                    onPressed: _landings > 0 ? () {
+                      setState(() {
+                        _landings--;
+                      });
+                    } : null,
+                  ),
                 ),
                 SizedBox(width: 5),
-                RaisedButton(
-                  child: Text('+'),
-                  onPressed: () {
-                    setState(() {
-                      _landings++;
-                    });
-                  },
+                Container(
+                  width: 40,
+                  child: RaisedButton(
+                    child: Text('+'),
+                    onPressed: () {
+                      setState(() {
+                        _landings++;
+                      });
+                    },
+                  )
                 )
               ],
             ),
@@ -327,7 +400,7 @@ class _EditFlightLogPageState extends State<EditFlightLogPage> {
       Step(
         title: const Text('Hours'),
         isActive: currentStep == 4,
-        state: StepState.editing,
+        state: totalTextController.text == '' ? StepState.editing : StepState.complete,
         content: Column(
           children: [
             Wrap(
