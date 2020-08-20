@@ -152,7 +152,7 @@ class _EditFlightLogPageState extends State<EditFlightLogPage> {
             RaisedButton(
               child: Text(_dateFormatter.format(_date)),
               onPressed: () {
-                showDatePicker(context: context, initialDate: _date, firstDate: DateTime(2018), lastDate: DateTime(2050))
+                showDatePicker(context: context, initialDate: _date, firstDate: DateTime(2018), lastDate: DateTime.now())
                 .then((date) {
                   setState(() {
                     _date = date == null ? _date : date;
