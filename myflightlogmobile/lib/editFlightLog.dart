@@ -4,17 +4,7 @@ import './network/fetchAircraft.dart';
 import 'package:flutter/services.dart';
 import './network/verifyAirport.dart';
 import './network/saveFlightLog.dart';
-
-
-class UpperCaseTextFormatter extends TextInputFormatter {
-  @override
-  TextEditingValue formatEditUpdate(TextEditingValue oldValue, TextEditingValue newValue) {
-    return TextEditingValue(
-      text: newValue.text?.toUpperCase(),
-      selection: newValue.selection,
-    );
-  }
-}
+import './components/upperCaseFormatter.dart';
 
 
 class EditFlightLogPage extends StatefulWidget {
@@ -250,7 +240,8 @@ class _EditFlightLogPageState extends State<EditFlightLogPage> {
             SizedBox(width: 20),
 
             RaisedButton(
-              child: Text('New Aircraft')
+              child: Text('New Aircraft'),
+              onPressed: () => Navigator.pushNamed(context, '/newAircraft')
             ),
           ],
         ),
