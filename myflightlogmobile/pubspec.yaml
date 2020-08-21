@@ -26,6 +26,7 @@ dependencies:
   intl:
   http:
   postgres: ^2.1.1
+  image_picker: ^0.6.7
 
 dev_dependencies:
   flutter_test:
