@@ -14,8 +14,11 @@ class AddAircraftPage extends StatefulWidget {
 }
 
 class _AddAircraftPageState extends State<AddAircraftPage> {
-  Future<List<String>> aircraftIdents;
-  Future<List<String>> aircraftTypes;
+  bool complete = false;
+  bool saving = true;
+
+  List<String> aircraftIdents;
+  List<String> aircraftTypes = [];
 
   final ImagePicker _picker = ImagePicker();
 
@@ -29,9 +32,11 @@ class _AddAircraftPageState extends State<AddAircraftPage> {
   bool _enableSaveButton = false;
   determineComplete() {
     bool typeFilled = _type == '_NEW' ? shortNameTextController.text != '' && longNameTextController.text != '' : _type != null;
+    bool airplaneNotTaken = !aircraftIdents.contains(nNumberTextController.text);
+    bool typeNotTaken = !aircraftTypes.contains(shortNameTextController.text);
 
     setState(() {
-      _enableSaveButton = nNumberTextController.text != '' && typeFilled && image != null;
+      _enableSaveButton = airplaneNotTaken && typeNotTaken && nNumberTextController.text != '' && typeFilled && image != null;
     });
   }
 
@@ -47,11 +52,34 @@ class _AddAircraftPageState extends State<AddAircraftPage> {
   }
 
 
+  saveButtonAction() async {
+    setState(() {
+      complete = true;
+      saving = true;
+    });
+
+    await saveAircraft(nNumberTextController.text, _type, shortNameTextController.text, longNameTextController.text, image);
+
+    setState(() {
+      saving = false;
+    });
+  }
+
+
+
+  loadAircraftData() async {
+    aircraftIdents = await fetchAircraft();
+    var types = await fetchAircraftTypes();
+
+    setState(() {
+      aircraftTypes = types;
+    });
+  }
+
   @override
   void initState() {
     super.initState();
-    aircraftIdents = fetchAircraft();
-    aircraftTypes = fetchAircraftTypes();
+    loadAircraftData();
   }
 
 
@@ -64,7 +92,26 @@ class _AddAircraftPageState extends State<AddAircraftPage> {
       body: Center(
         child: Column(
           mainAxisAlignment: MainAxisAlignment.start,
-          children: <Widget>[
+          children: complete ? 
+            <Widget>[
+              Expanded(
+                child: Center(
+                  child: AlertDialog(
+                    title: saving ? Text('Saving Aircraft') : Text('Saved Aircraft'),
+                    content: saving ? Container(height: 50, child: Center(child: CircularProgressIndicator())) : null,
+                    actions: saving ? [] : [
+                      RaisedButton(
+                        child: Text('Back'),
+                        onPressed: () {
+                          Navigator.pop(context);
+                        }
+                      )
+                    ],
+                  )
+                )
+              )
+            ]
+          : <Widget>[
             SizedBox(height: 50),
 
             Row(
@@ -88,37 +135,26 @@ class _AddAircraftPageState extends State<AddAircraftPage> {
 
                 Padding(
                 padding: EdgeInsets.only(top: 20),
-                child: FutureBuilder(
-                  future: aircraftTypes,
-                  builder: (context, snapshot) {
-                      if (snapshot.hasData) {
-                        return DropdownButton<String>(
-                          value: _type,
-                          onChanged: (String newValue) {
-                            setState(() => _type = newValue);
-                            determineComplete();
-                          },
-                          items: [
-                            ...snapshot.data
-                              .map<DropdownMenuItem<String>>((value) {
-                                return DropdownMenuItem<String>(
-                                  value: value,
-                                  child: Text(value),
-                                );
-                              }).toList(),
-                            DropdownMenuItem<String>(
-                              value: '_NEW',
-                              child: Text('New Type')
-                            )
-                          ]
-                        );
-                      } else if (snapshot.hasError) {
-                        return Text('Could not load aircraft types');
-                      }
-
-                      return CircularProgressIndicator();
-                    }
-                  ),
+                child: DropdownButton<String>(
+                    value: _type,
+                    onChanged: (String newValue) {
+                      setState(() => _type = newValue);
+                      determineComplete();
+                    },
+                    items: [
+                      ...aircraftTypes
+                        .map<DropdownMenuItem<String>>((value) {
+                          return DropdownMenuItem<String>(
+                            value: value,
+                            child: Text(value),
+                          );
+                        }).toList(),
+                      DropdownMenuItem<String>(
+                        value: '_NEW',
+                        child: Text('New Type')
+                      )
+                    ]
+                  )
                 )
               ]
             ),
@@ -139,6 +175,9 @@ class _AddAircraftPageState extends State<AddAircraftPage> {
                         decoration: InputDecoration(
                           labelText: 'Short Name',
                         ),
+                        inputFormatters: [
+                          UpperCaseTextFormatter(),
+                        ],
                       ),
                     ),
                     SizedBox(width: 20),
@@ -147,6 +186,7 @@ class _AddAircraftPageState extends State<AddAircraftPage> {
                       child: Padding(
                         padding: EdgeInsets.only(bottom: 25),
                         child: TextField(
+                          textCapitalization: TextCapitalization.words,
                           onChanged: (value) => determineComplete(),
                           controller: longNameTextController,
                           decoration: InputDecoration(
@@ -198,9 +238,7 @@ class _AddAircraftPageState extends State<AddAircraftPage> {
 
                 RaisedButton(
                   child: Text('Save'),
-                  onPressed: _enableSaveButton ? () {
-                    saveAircraft(nNumberTextController.text, _type, shortNameTextController.text, longNameTextController.text, image);
-                  } : null,
+                  onPressed: _enableSaveButton ? saveButtonAction : null,
                 )
               ],
             ),
