@@ -5,6 +5,8 @@ import 'package:flutter/services.dart';
 import './network/verifyAirport.dart';
 import './network/saveFlightLog.dart';
 import './components/upperCaseFormatter.dart';
+import 'dart:io';
+import 'package:image_picker/image_picker.dart';
 
 
 class EditFlightLogPage extends StatefulWidget {
@@ -47,6 +49,9 @@ class _EditFlightLogPageState extends State<EditFlightLogPage> {
   final pilotInCommandTextController = TextEditingController();
   final totalTextController = TextEditingController();
 
+  final ImagePicker _picker = ImagePicker();
+  List<File> photos = [];
+
 
   void newAircraft() async {
     final newAircraft = await Navigator.pushNamed(context, '/newAircraft');
@@ -87,6 +92,26 @@ class _EditFlightLogPageState extends State<EditFlightLogPage> {
       _removeButtonEnabled = _stops.length > 0;
     });
   }
+
+
+  void addImage() async {
+    PickedFile pickedPic = await _picker.getImage(source: ImageSource.gallery);
+    File pickedFile = File(pickedPic.path);
+
+    // Read each image as bytes and convert to string
+    List<String> photoStr = [];
+    photos.forEach((photo) {
+      photoStr.add(photo.readAsBytesSync().join(','));
+    });
+
+    // Check if picked photo, converted to byte string, already exists
+    if (!photoStr.contains(pickedFile.readAsBytesSync().join(','))) {
+      setState(() {
+        photos.add(File(pickedPic.path));
+      });
+    }
+  }
+
 
 
   Map<String, double> createHoursMap() {
@@ -206,6 +231,8 @@ class _EditFlightLogPageState extends State<EditFlightLogPage> {
         content: Row(
           children: [
             RaisedButton(
+              color: Colors.blue,
+              textColor: Colors.white,
               child: Text(_dateFormatter.format(_date)),
               onPressed: () {
                 showDatePicker(context: context, initialDate: _date, firstDate: DateTime(2018), lastDate: DateTime.now())
@@ -252,6 +279,8 @@ class _EditFlightLogPageState extends State<EditFlightLogPage> {
             SizedBox(width: 20),
 
             RaisedButton(
+              color: Colors.blue,
+              textColor: Colors.white,
               child: Text('New Aircraft'),
               onPressed: newAircraft,
             ),
@@ -316,6 +345,8 @@ class _EditFlightLogPageState extends State<EditFlightLogPage> {
                 Container(
                   width: 75,
                   child: RaisedButton(
+                    color: Colors.blue,
+                    textColor: Colors.white,
                     child: Text('Add'),
                     onPressed: _addButtonEnabled ? addStop : null,
                   ),
@@ -324,6 +355,8 @@ class _EditFlightLogPageState extends State<EditFlightLogPage> {
                 SizedBox(width: 5),
 
                 RaisedButton(
+                  color: Colors.red,
+                  textColor: Colors.white,
                   child: Text('Remove'),
                   onPressed: _removeButtonEnabled ? removeStop : null,
                 ),
@@ -349,6 +382,8 @@ class _EditFlightLogPageState extends State<EditFlightLogPage> {
                 Container(
                   width: 40,
                   child: RaisedButton(
+                    color: Colors.red,
+                    textColor: Colors.white,
                     child: Text('-'),
                     onPressed: _takeoffs > 0 ? () {
                       setState(() => _takeoffs--);
@@ -359,6 +394,8 @@ class _EditFlightLogPageState extends State<EditFlightLogPage> {
                 Container(
                   width: 40,
                   child: RaisedButton(
+                    color: Colors.blue,
+                    textColor: Colors.white,
                     child: Text('+'),
                     onPressed: () {
                       setState(() => _takeoffs++);
@@ -376,6 +413,8 @@ class _EditFlightLogPageState extends State<EditFlightLogPage> {
                 Container(
                   width: 40,
                   child: RaisedButton(
+                    color: Colors.red,
+                    textColor: Colors.white,
                     child: Text('-'),
                     onPressed: _landings > 0 ? () {
                       setState(() => _landings--);
@@ -386,6 +425,8 @@ class _EditFlightLogPageState extends State<EditFlightLogPage> {
                 Container(
                   width: 40,
                   child: RaisedButton(
+                    color: Colors.blue,
+                    textColor: Colors.white,
                     child: Text('+'),
                     onPressed: () {
                       setState(() => _landings++);
@@ -441,8 +482,56 @@ class _EditFlightLogPageState extends State<EditFlightLogPage> {
         isActive: currentStep == 6,
         state: StepState.complete,
         content: Column(
-          children: [],
-        ),
+          children: [
+            Wrap(
+              spacing: 10,
+              children: [
+                ...photos.map<Widget>((photo) {
+                  return Column(
+                    children: [
+                      Image.file(
+                        photo,
+                        width: 75,
+                        height: 75,
+                      ),
+
+                      Container(
+                        width: 75,
+                        child: RaisedButton(
+                          color: Colors.red,
+                          textColor: Colors.white,
+                          child: Text('X'),
+                          onPressed: () {
+                            setState(() {
+                              photos.removeAt(photos.indexOf(photo));
+                            });
+                          },
+                        ),
+                      ),
+
+                      SizedBox(height: 10),
+                    ]
+                  );
+                }).toList(),
+
+                Container(
+                  width: 75,
+                  height: 75,
+                  child: RaisedButton(
+                    color: Colors.white,
+                    textColor: Colors.black,
+                    child: Icon(Icons.add_a_photo),
+                    onPressed: () {
+                      // Make sure this guy is enabled right now
+                      addImage();
+                    },
+                  )
+                )
+              ],
+            ),
+            SizedBox(height: 10),
+          ]
+        )
       ),
     ];
 
