@@ -36,7 +36,9 @@ Future<bool> saveFlightLog(DateTime date, bool favorite, String aircraftIdent, L
 
   String flightId = result[0][0];
 
-  photos.forEach((photo) async {
+
+  for (int x = 0; x < photos.length; x++) {
+    var photo = photos[x];
     var connection = await openSQLConnection();
     var imageBytes = await photo.readAsBytes();
     await connection.query('INSERT INTO pictures (flightid, id, data) VALUES (@flightId, uuid_generate_v1(), @photo:bytea)',
@@ -46,7 +48,7 @@ Future<bool> saveFlightLog(DateTime date, bool favorite, String aircraftIdent, L
       }
     );
     connection.close();
-  });
+  }
 
 
   connection.close();
