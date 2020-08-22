@@ -17,7 +17,6 @@ class EditFlightLogPage extends StatefulWidget {
 }
 
 class _EditFlightLogPageState extends State<EditFlightLogPage> {
-  bool saving = false;
   final DateFormat _dateFormatter = DateFormat('dd MMMM, yyyy');
   Future<List<String>> aircraftIdents;
 
@@ -145,9 +144,19 @@ class _EditFlightLogPageState extends State<EditFlightLogPage> {
   }
 
 
+
+  String saveStatusText = 'Uploading 1/15 Photos';
+  void setSaveStatus(String status) {
+    setState(() {
+      saveStatusText = status;
+    });
+  }
+
+
   // Stepper state
   int currentStep = 0;
   bool complete = false;
+  bool saving = false;
 
   next() async {
     if (currentStep == 6 && _aircraft != '' && _stops.length > 0 && totalTextController.text != '' && remarksTextController.text != '') {
@@ -157,7 +166,7 @@ class _EditFlightLogPageState extends State<EditFlightLogPage> {
       });
 
       Map<String, double> hours = createHoursMap();
-      await saveFlightLog(_date, _favorite, _aircraft, _stops, _takeoffs, _landings, hours, remarksTextController.text, photos);
+      await saveFlightLog(_date, _favorite, _aircraft, _stops, _takeoffs, _landings, hours, remarksTextController.text, photos, setSaveStatus);
 
       setState(() => saving = false);
     }
@@ -548,7 +557,20 @@ class _EditFlightLogPageState extends State<EditFlightLogPage> {
               child: Center(
                 child: AlertDialog(
                   title: saving ? Text('Saving Flight Log') : Text('Saved Flight Log'),
-                  content: saving ? Container(height: 50, child: Center(child: CircularProgressIndicator())) : null,
+                  content: saving ?
+                    Container(
+                      height: 80,
+                      child: Center(
+                        child: Column(
+                          children: [
+                            CircularProgressIndicator(),
+                            SizedBox(height: 20),
+                            Text(saveStatusText),
+                          ]
+                        )
+                      )
+                    )
+                    : null,
                   actions: saving ? [] : [
                     RaisedButton(
                       child: Text('Close'),
