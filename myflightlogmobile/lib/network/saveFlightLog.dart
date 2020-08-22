@@ -2,8 +2,12 @@ import './openConnection.dart';
 import 'dart:io';
 
 
-Future<bool> saveFlightLog(DateTime date, bool favorite, String aircraftIdent, List<String> stops, int takeoffs, int landings, Map<String, double> hours, String remarks, List<File> photos) async {
+Future<bool> saveFlightLog(DateTime date, bool favorite, String aircraftIdent, List<String> stops, int takeoffs, int landings, Map<String, double> hours, String remarks, List<File> photos, Function setSaveStatus) async {
+  setSaveStatus('Connecting');
+  
   var connection = await openSQLConnection();
+
+  setSaveStatus('Saving Log');
 
   if (stops.length == 1) {
     stops.add(stops[0]);
@@ -32,12 +36,14 @@ Future<bool> saveFlightLog(DateTime date, bool favorite, String aircraftIdent, L
       'remarks': remarks,
       'favorite': favorite,
     });
-
-
   String flightId = result[0][0];
 
 
+  int photoCount = photos.length;
   for (int x = 0; x < photos.length; x++) {
+    int currentPhoto = x + 1;
+    setSaveStatus('Uploading $currentPhoto/$photoCount Photos');
+
     var photo = photos[x];
     var connection = await openSQLConnection();
     var imageBytes = await photo.readAsBytes();
