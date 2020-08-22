@@ -1,7 +1,8 @@
 import './openConnection.dart';
+import 'dart:io';
 
 
-Future<bool> saveFlightLog(DateTime date, bool favorite, String aircraftIdent, List<String> stops, int takeoffs, int landings, Map<String, double> hours, String remarks) async {
+Future<bool> saveFlightLog(DateTime date, bool favorite, String aircraftIdent, List<String> stops, int takeoffs, int landings, Map<String, double> hours, String remarks, List<File> photos) async {
   var connection = await openSQLConnection();
 
   if (stops.length == 1) {
@@ -12,7 +13,7 @@ Future<bool> saveFlightLog(DateTime date, bool favorite, String aircraftIdent, L
   postgresStopsString = '{$postgresStopsString}';
 
 
-  await connection.query('INSERT INTO log (id, date, ident, stops, night, instrument, sim_instrument, flight_sim, cross_country, instructor, dual, pic, total, takeoffs, landings, remarks, favorite) VALUES (uuid_generate_v1(), @date, @ident, @stops, @night, @instr, @siminstr, @sim, @xc, @instructor, @dual, @pic, @total, @takeoff, @landing, @remarks, @favorite)',
+  final result = await connection.query('INSERT INTO log (id, date, ident, stops, night, instrument, sim_instrument, flight_sim, cross_country, instructor, dual, pic, total, takeoffs, landings, remarks, favorite) VALUES (uuid_generate_v1(), @date, @ident, @stops, @night, @instr, @siminstr, @sim, @xc, @instructor, @dual, @pic, @total, @takeoff, @landing, @remarks, @favorite) RETURNING id',
     substitutionValues: {
       'date': date,
       'ident': aircraftIdent,
@@ -31,6 +32,22 @@ Future<bool> saveFlightLog(DateTime date, bool favorite, String aircraftIdent, L
       'remarks': remarks,
       'favorite': favorite,
     });
+
+
+  String flightId = result[0][0];
+
+  photos.forEach((photo) async {
+    var connection = await openSQLConnection();
+    var imageBytes = await photo.readAsBytes();
+    await connection.query('INSERT INTO pictures (flightid, id, data) VALUES (@flightId, uuid_generate_v1(), @photo:bytea)',
+      substitutionValues: {
+        'flightId': flightId,
+        'photo': imageBytes
+      }
+    );
+    connection.close();
+  });
+
 
   connection.close();
 
