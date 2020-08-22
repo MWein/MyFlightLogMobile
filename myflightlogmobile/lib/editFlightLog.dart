@@ -48,6 +48,18 @@ class _EditFlightLogPageState extends State<EditFlightLogPage> {
   final totalTextController = TextEditingController();
 
 
+  void newAircraft() async {
+    final newAircraft = await Navigator.pushNamed(context, '/newAircraft');
+
+    if (newAircraft != null) {
+      setState(() {
+        aircraftIdents = fetchAircraft();
+        _aircraft = newAircraft;
+      });
+    }
+  }
+
+
   void addStop() async {
     setState(() {
       _verifyingAirport = true;
@@ -217,7 +229,7 @@ class _EditFlightLogPageState extends State<EditFlightLogPage> {
               builder: (context, snapshot) {
                 if (snapshot.hasData) {
                   return DropdownButton<String>(
-                    value: _aircraft,
+                    value: snapshot.data.contains(_aircraft) ? _aircraft : null,
                     onChanged: (String newValue) {
                       setState(() => _aircraft = newValue);
                     },
@@ -241,7 +253,7 @@ class _EditFlightLogPageState extends State<EditFlightLogPage> {
 
             RaisedButton(
               child: Text('New Aircraft'),
-              onPressed: () => Navigator.pushNamed(context, '/newAircraft')
+              onPressed: newAircraft,
             ),
           ],
         ),

@@ -103,7 +103,7 @@ class _AddAircraftPageState extends State<AddAircraftPage> {
                       RaisedButton(
                         child: Text('Back'),
                         onPressed: () {
-                          Navigator.pop(context);
+                          Navigator.pop(context, nNumberTextController.text);
                         }
                       )
                     ],
