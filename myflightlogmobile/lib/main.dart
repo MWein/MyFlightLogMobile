@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:myflightlogmobile/addAircraft.dart';
 import './editFlightLog.dart';
 
 void main() => runApp(MyApp());
@@ -17,6 +18,7 @@ class MyApp extends StatelessWidget {
       routes: {
         '/': (context) => MyHomePage(),
         '/flight': (context) => EditFlightLogPage(),
+        '/newAircraft': (context) => AddAircraftPage(),
       }
     );
   }
@@ -46,9 +48,7 @@ class _MyHomePageState extends State<MyHomePage> {
               icon: Icon(Icons.history),
               color: Colors.lightBlue,
               iconSize: 150.0,
-              onPressed: () {
-                Navigator.pushNamed(context, '/flight');
-              }
+              onPressed: () => Navigator.pushNamed(context, '/flight')
             ),
 
             Spacer(),

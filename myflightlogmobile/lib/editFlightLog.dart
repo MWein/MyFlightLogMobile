@@ -4,17 +4,7 @@ import './network/fetchAircraft.dart';
 import 'package:flutter/services.dart';
 import './network/verifyAirport.dart';
 import './network/saveFlightLog.dart';
-
-
-class UpperCaseTextFormatter extends TextInputFormatter {
-  @override
-  TextEditingValue formatEditUpdate(TextEditingValue oldValue, TextEditingValue newValue) {
-    return TextEditingValue(
-      text: newValue.text?.toUpperCase(),
-      selection: newValue.selection,
-    );
-  }
-}
+import './components/upperCaseFormatter.dart';
 
 
 class EditFlightLogPage extends StatefulWidget {
@@ -56,6 +46,18 @@ class _EditFlightLogPageState extends State<EditFlightLogPage> {
   final dualTextController = TextEditingController();
   final pilotInCommandTextController = TextEditingController();
   final totalTextController = TextEditingController();
+
+
+  void newAircraft() async {
+    final newAircraft = await Navigator.pushNamed(context, '/newAircraft');
+
+    if (newAircraft != null) {
+      setState(() {
+        aircraftIdents = fetchAircraft();
+        _aircraft = newAircraft;
+      });
+    }
+  }
 
 
   void addStop() async {
@@ -227,7 +229,7 @@ class _EditFlightLogPageState extends State<EditFlightLogPage> {
               builder: (context, snapshot) {
                 if (snapshot.hasData) {
                   return DropdownButton<String>(
-                    value: _aircraft,
+                    value: snapshot.data.contains(_aircraft) ? _aircraft : null,
                     onChanged: (String newValue) {
                       setState(() => _aircraft = newValue);
                     },
@@ -250,7 +252,8 @@ class _EditFlightLogPageState extends State<EditFlightLogPage> {
             SizedBox(width: 20),
 
             RaisedButton(
-              child: Text('New Aircraft')
+              child: Text('New Aircraft'),
+              onPressed: newAircraft,
             ),
           ],
         ),
