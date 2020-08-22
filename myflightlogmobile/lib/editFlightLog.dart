@@ -157,7 +157,7 @@ class _EditFlightLogPageState extends State<EditFlightLogPage> {
       });
 
       Map<String, double> hours = createHoursMap();
-      await saveFlightLog(_date, _favorite, _aircraft, _stops, _takeoffs, _landings, hours, remarksTextController.text);
+      await saveFlightLog(_date, _favorite, _aircraft, _stops, _takeoffs, _landings, hours, remarksTextController.text, photos);
 
       setState(() => saving = false);
     }
